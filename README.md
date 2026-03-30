@@ -1,8 +1,8 @@
 # 🎾 Tennis-Scheduler: 极速网球赛事智能编排引擎
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+[![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/downloads/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/pulls)
 
 解决多项目网球比赛兼项冲突、轮空不对称、连场休息等痛点的全自动排程工具。
 
