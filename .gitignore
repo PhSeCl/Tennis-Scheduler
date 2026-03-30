@@ -3,3 +3,6 @@
 /data/**/*.json
 
 /results/*.txt
+
+/src/__pycache__/
+/src/**/*.pyc
