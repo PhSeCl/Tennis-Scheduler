@@ -1,6 +1,6 @@
 # 🎾 Tennis-Scheduler: 极速网球赛事智能编排引擎
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/PhSeCl/Tennis-Scheduler/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
