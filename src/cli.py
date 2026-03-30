@@ -116,7 +116,9 @@ if __name__ == "__main__":
         schedule_by_t.setdefault(node.scheduled_time, []).append(node.match_id)
 
     base_dir = os.path.dirname(__file__)
-    result_path = os.path.join(base_dir, "schedule_result.txt")
+    results_dir = os.path.join(base_dir, "results")
+    os.makedirs(results_dir, exist_ok=True)
+    result_path = os.path.join(results_dir, "schedule_result.txt")
     with open(result_path, "w", encoding="utf-8") as f:
         f.write("=" * 50 + "\n")
         f.write("网球赛事极速智能编排结果\n")
@@ -138,5 +140,5 @@ if __name__ == "__main__":
     total_slots = best_state.t - 1
     print(
         "[Success] 赛程计算完毕！"
-        f"总耗时片: {total_slots}, 结果已保存至 schedule_result.txt"
+        f"总耗时片: {total_slots}, 结果已保存至 results/schedule_result.txt"
     )
