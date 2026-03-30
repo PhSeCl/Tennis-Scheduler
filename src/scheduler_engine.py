@@ -155,6 +155,8 @@ def beam_search_schedule(
     使用束搜索（Beam Search）生成赛程。
     仅实现主循环，不包含其他外层业务逻辑。
     """
+    MAX_BRANCHES_PER_STATE = 30
+
     # Root State: 初始化 ready 集合（入度为 0）
     initial_ready = {
         match_id
@@ -186,27 +188,42 @@ def beam_search_schedule(
                 next_candidates.append(state)
                 continue
 
-            # 每个时间片强制尽量排满
+            # 每个时间片尽量排满，若冲突过多则降级尝试
             k = min(len(state.ready_match_ids), n_courts)
 
             # 为绝对确定性，组合输入使用排序后的 ID 列表
             ordered_ready_ids = sorted(state.ready_match_ids)
-            for combo in itertools.combinations(ordered_ready_ids, k):
-                # Hard constraint: 同一时间片内潜在选手不能交叉
-                has_overlap = False
-                for i, match_id_a in enumerate(combo):
-                    players_a = state.all_nodes[match_id_a].potential_players
-                    for match_id_b in combo[i + 1 :]:
-                        players_b = state.all_nodes[match_id_b].potential_players
-                        if players_a & players_b:
-                            has_overlap = True
+            valid_combos: list[list[int]] = []
+            for i in range(k, 0, -1):
+                for combo in itertools.combinations(ordered_ready_ids, i):
+                    # Hard constraint: 同一时间片内潜在选手不能交叉
+                    has_overlap = False
+                    for j, match_id_a in enumerate(combo):
+                        players_a = state.all_nodes[match_id_a].potential_players
+                        for match_id_b in combo[j + 1 :]:
+                            players_b = state.all_nodes[match_id_b].potential_players
+                            if players_a & players_b:
+                                has_overlap = True
+                                break
+                        if has_overlap:
                             break
                     if has_overlap:
-                        break
-                if has_overlap:
-                    continue
+                        continue
+                    valid_combos.append(list(combo))
+
+                if valid_combos:
+                    break
+
+            if len(valid_combos) > MAX_BRANCHES_PER_STATE:
+                step = len(valid_combos) / MAX_BRANCHES_PER_STATE
+                valid_combos = [
+                    valid_combos[int(j * step)]
+                    for j in range(MAX_BRANCHES_PER_STATE)
+                ]
+
+            for combo in valid_combos:
                 new_state = state.generate_next_state(
-                    selected_match_ids=list(combo),
+                    selected_match_ids=combo,
                     n_courts=n_courts,
                     evaluator=evaluator,
                 )

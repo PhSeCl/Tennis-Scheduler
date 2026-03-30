@@ -1,3 +1,5 @@
 # Ignore JSON files under data
 /data/*.json
 /data/**/*.json
+
+/results/*.txt
