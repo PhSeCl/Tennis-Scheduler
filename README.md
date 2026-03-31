@@ -37,6 +37,7 @@
 ```
 
 > `is_staying_at_venue` 用来控制“早场惩罚”，不住在场地的选手尽量不会被排在第一场。
+> 项目提供了脱敏样例可参考：`data/sample_players.json`。
 
 ### A-1. 报名数据校验 (Data Gatekeeper)
 
@@ -75,6 +76,7 @@ python tools/check_players.py \
 ```
 
 > 引擎会自动识别 `player` / `players`，无需区分单打双打接口。
+> 项目提供了脱敏样例可参考：`data/matchs/sample_*.json`。
 
 ### C. 一键运行 (Run the Engine)
 
@@ -104,7 +106,7 @@ python src/cli.py \
 
 ### D. 查看赛程表
 
-结果会保存在：`src/results/schedule_result.txt`
+结果会保存在：`results/schedule_result_*.txt`
 
 示例输出：
 
@@ -120,6 +122,15 @@ python src/cli.py \
 
 [时间片 2]
   - 场地 1: [男单 1/8决赛] 王五 vs 轮空 (场次ID: 1002)
+```
+
+## 🧪 测试要求 (Testing)
+
+项目单元测试使用 `pytest`，覆盖率统计使用 `pytest-cov`。
+
+```bash
+python -m pip install pytest pytest-cov
+pytest -q --cov=src --cov=tools --cov-report=term-missing --cov-fail-under=80
 ```
 
 ## 🧭 数据格式约束 (Data Constraints)
@@ -205,8 +216,10 @@ evaluator = TennisTournamentEvaluator(
 
 ```text
 Tennis-Scheduler/
-├─ data/                 # 示例数据
+├─ .github/workflows/     # CI 配置
+├─ data/                 # 示例数据（含 sample_*.json）
 ├─ results/              # 可选输出目录（若存在）
+├─ tests/                # 单元测试
 ├─ tools/
 │  └─ check_players.py    # 报名数据校验工具
 └─ src/
