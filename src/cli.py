@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import datetime
 
 from cost_evaluator import (
     BackToBackRule,
@@ -62,6 +63,7 @@ if __name__ == "__main__":
 
     all_nodes: dict[int, object] = {}
     all_labels: dict[int, str] = {}
+    enabled_events: list[str] = []
 
     for key in ("ms", "ws", "md", "wd", "xd"):
         draw_path = getattr(args, key)
@@ -76,6 +78,7 @@ if __name__ == "__main__":
             "xd": "混双抽签",
         }[key]
         print(f"正在解析{event_name}...")
+        enabled_events.append(event_name.replace("抽签", ""))
         draw_list = _safe_load_json(draw_path, event_name)
 
         # 解析抽签并构建 DAG
@@ -123,13 +126,20 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(__file__)
     results_dir = os.path.join(base_dir, "results")
     os.makedirs(results_dir, exist_ok=True)
-    result_path = os.path.join(results_dir, "schedule_result.txt")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    result_path = os.path.join(results_dir, f"schedule_result_{timestamp}.txt")
     with open(result_path, "w", encoding="utf-8") as f:
         f.write("=" * 50 + "\n")
         f.write("网球赛事极速智能编排结果\n")
         f.write(
             f"总惩罚分: {best_state.cost} | 预计完赛总时间片: {best_state.t - 1}\n"
         )
+        f.write("排表项目: " + ("、".join(enabled_events) or "无") + "\n")
+        f.write("启用规则:\n")
+        for rule in evaluator.match_rules:
+            f.write(f"  - {rule.name} (权重: {rule.weight}): {rule.description}\n")
+        for rule in evaluator.global_rules:
+            f.write(f"  - {rule.name} (权重: {rule.weight}): {rule.description}\n")
         f.write("=" * 50 + "\n\n")
 
         for t in sorted(schedule_by_t.keys()):
