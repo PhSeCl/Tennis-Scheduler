@@ -36,9 +36,7 @@ def test_no_overlapping_players_same_timeslice() -> None:
 
     schedule_by_t: dict[int, list[set[str]]] = {}
     for node in best_state.all_nodes.values():
-        schedule_by_t.setdefault(node.scheduled_time, []).append(
-            node.potential_players
-        )
+        schedule_by_t.setdefault(node.scheduled_time, []).append(node.potential_players)
 
     for t, player_sets in schedule_by_t.items():
         for i, players_i in enumerate(player_sets):
@@ -52,12 +50,10 @@ def test_deterministic_scheduling_order() -> None:
     second_run = _schedule_simple_overlap_case()
 
     first_times = {
-        node.match_id: node.scheduled_time
-        for node in first_run.all_nodes.values()
+        node.match_id: node.scheduled_time for node in first_run.all_nodes.values()
     }
     second_times = {
-        node.match_id: node.scheduled_time
-        for node in second_run.all_nodes.values()
+        node.match_id: node.scheduled_time for node in second_run.all_nodes.values()
     }
 
     assert first_times == second_times

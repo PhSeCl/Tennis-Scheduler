@@ -50,9 +50,7 @@ def test_build_dag_with_bye_branch() -> None:
 
 
 def test_build_dag_rejects_double_bye() -> None:
-    players = {
-        "PlayerA": {"is_staying_at_venue": True}
-    }
+    players = {"PlayerA": {"is_staying_at_venue": True}}
     draw = [
         {"player": "轮空", "round": 0},
         {"player": "轮空", "round": 0},

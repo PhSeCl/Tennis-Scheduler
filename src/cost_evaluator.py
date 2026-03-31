@@ -14,34 +14,29 @@ class CostEvaluator(Protocol):
         match: "MatchNode",
         t: int,
         scheduled_matches: list["MatchNode"],
-    ) -> float:
-        ...
+    ) -> float: ...
 
     def empty_court_penalty(
         self,
         total_scheduled_matches: int,
         current_t: int,
         n_courts: int,
-    ) -> float:
-        ...
+    ) -> float: ...
 
 
 class MatchRule(ABC):
     # 针对单场比赛的惩罚规则
     @property
     @abstractmethod
-    def name(self) -> str:
-        ...
+    def name(self) -> str: ...
 
     @property
     @abstractmethod
-    def description(self) -> str:
-        ...
+    def description(self) -> str: ...
 
     @property
     @abstractmethod
-    def weight(self) -> float:
-        ...
+    def weight(self) -> float: ...
 
     @abstractmethod
     def evaluate(
@@ -49,26 +44,22 @@ class MatchRule(ABC):
         match: "MatchNode",
         t: int,
         scheduled_matches: list["MatchNode"],
-    ) -> float:
-        ...
+    ) -> float: ...
 
 
 class GlobalRule(ABC):
     # 针对全局赛程的惩罚规则
     @property
     @abstractmethod
-    def name(self) -> str:
-        ...
+    def name(self) -> str: ...
 
     @property
     @abstractmethod
-    def description(self) -> str:
-        ...
+    def description(self) -> str: ...
 
     @property
     @abstractmethod
-    def weight(self) -> float:
-        ...
+    def weight(self) -> float: ...
 
     @abstractmethod
     def evaluate(
@@ -76,8 +67,7 @@ class GlobalRule(ABC):
         total_scheduled_matches: int,
         current_t: int,
         n_courts: int,
-    ) -> float:
-        ...
+    ) -> float: ...
 
 
 class EarlyStartRule(MatchRule):

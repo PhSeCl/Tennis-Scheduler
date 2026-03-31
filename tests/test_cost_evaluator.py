@@ -157,5 +157,10 @@ def test_zero_and_negative_weights_edge_cases(
     empty_zero = EmptyCourtRule(weight=0.0)
     empty_negative = EmptyCourtRule(weight=-1.0)
 
-    assert empty_zero.evaluate(total_scheduled_matches=0, current_t=2, n_courts=1) == 0.0
-    assert empty_negative.evaluate(total_scheduled_matches=0, current_t=2, n_courts=1) == -1.0
+    assert (
+        empty_zero.evaluate(total_scheduled_matches=0, current_t=2, n_courts=1) == 0.0
+    )
+    assert (
+        empty_negative.evaluate(total_scheduled_matches=0, current_t=2, n_courts=1)
+        == -1.0
+    )

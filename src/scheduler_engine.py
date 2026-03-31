@@ -49,9 +49,15 @@ class MatchNode:
         规则：前置比赛不为 None 且其 scheduled_time == -1 视为“未决依赖”。
         """
         pending = 0
-        if self.left_prev_match is not None and self.left_prev_match.scheduled_time == -1:
+        if (
+            self.left_prev_match is not None
+            and self.left_prev_match.scheduled_time == -1
+        ):
             pending += 1
-        if self.right_prev_match is not None and self.right_prev_match.scheduled_time == -1:
+        if (
+            self.right_prev_match is not None
+            and self.right_prev_match.scheduled_time == -1
+        ):
             pending += 1
         return pending
 
@@ -62,6 +68,7 @@ class ScheduleState:
     赛程搜索中的“单个宇宙状态”。
     仅包含状态表达与单步转移，不包含任何搜索主循环。
     """
+
     t: int  # 当前即将安排的时间片（初始为 1）
     all_nodes: dict[int, MatchNode]  # 当前宇宙中的完整比赛 DAG
     ready_match_ids: set[int]  # 当前可被安排的比赛 ID 集合
@@ -218,8 +225,7 @@ def beam_search_schedule(
             if len(valid_combos) > MAX_BRANCHES_PER_STATE:
                 step = len(valid_combos) / MAX_BRANCHES_PER_STATE
                 valid_combos = [
-                    valid_combos[int(j * step)]
-                    for j in range(MAX_BRANCHES_PER_STATE)
+                    valid_combos[int(j * step)] for j in range(MAX_BRANCHES_PER_STATE)
                 ]
 
             for combo in valid_combos:

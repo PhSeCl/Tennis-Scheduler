@@ -131,9 +131,7 @@ if __name__ == "__main__":
     with open(result_path, "w", encoding="utf-8") as f:
         f.write("=" * 50 + "\n")
         f.write("网球赛事极速智能编排结果\n")
-        f.write(
-            f"总惩罚分: {best_state.cost} | 预计完赛总时间片: {best_state.t - 1}\n"
-        )
+        f.write(f"总惩罚分: {best_state.cost} | 预计完赛总时间片: {best_state.t - 1}\n")
         f.write("排表项目: " + ("、".join(enabled_events) or "无") + "\n")
         f.write("启用规则:\n")
         for rule in evaluator.match_rules:
@@ -147,9 +145,7 @@ if __name__ == "__main__":
             ids = sorted(schedule_by_t[t])
             for idx, match_id in enumerate(ids, start=1):
                 label = all_labels.get(match_id, f"[未知] 场次{match_id}")
-                f.write(
-                    f"  - 场地 {idx}: {label} (场次ID: {match_id})\n"
-                )
+                f.write(f"  - 场地 {idx}: {label} (场次ID: {match_id})\n")
             f.write("\n")
 
     total_slots = best_state.t - 1

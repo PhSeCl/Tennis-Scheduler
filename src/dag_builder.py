@@ -17,6 +17,7 @@ class _AdvanceBranch:
             表示该轮空队伍的非驻地惩罚人数。
         - display_name: 当前分支晋级者的人类可读名称。
     """
+
     prev_match: Optional[MatchNode]
     direct_entry_non_staying: int
     display_name: str
@@ -99,7 +100,10 @@ def build_dag_from_json(
         raise ValueError("draw_list 长度必须为偶数（两两成对）")
 
     first_round_matches = len(draw_list) // 2
-    if first_round_matches <= 0 or (first_round_matches & (first_round_matches - 1)) != 0:
+    if (
+        first_round_matches <= 0
+        or (first_round_matches & (first_round_matches - 1)) != 0
+    ):
         raise ValueError("首轮场次数必须为 2 的幂")
 
     # 仅用于阅读与调试
@@ -139,10 +143,9 @@ def build_dag_from_json(
             continue
 
         # 真实首轮比赛
-        non_staying_count = (
-            _get_non_staying_count(left_players, players_dict)
-            + _get_non_staying_count(right_players, players_dict)
-        )
+        non_staying_count = _get_non_staying_count(
+            left_players, players_dict
+        ) + _get_non_staying_count(right_players, players_dict)
         node = MatchNode(
             match_id=next_match_id,
             left_prev_match=None,
