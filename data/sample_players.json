@@ -1,0 +1,86 @@
+{
+  "PlayerA": {
+    "name": "PlayerA",
+    "sex": "男",
+    "student_id": "S001",
+    "is_staying_at_venue": true,
+    "registered_events": [
+      {"event_type": "男子单打", "partner": ""},
+      {"event_type": "男子双打", "partner": "PlayerB"},
+      {"event_type": "混合双打", "partner": "PlayerC"}
+    ]
+  },
+  "PlayerB": {
+    "name": "PlayerB",
+    "sex": "男",
+    "student_id": "S002",
+    "is_staying_at_venue": false,
+    "registered_events": [
+      {"event_type": "男子单打", "partner": ""},
+      {"event_type": "男子双打", "partner": "PlayerA"},
+      {"event_type": "混合双打", "partner": "PlayerD"}
+    ]
+  },
+  "PlayerE": {
+    "name": "PlayerE",
+    "sex": "男",
+    "student_id": "S003",
+    "is_staying_at_venue": true,
+    "registered_events": [
+      {"event_type": "男子单打", "partner": ""},
+      {"event_type": "男子双打", "partner": "PlayerF"}
+    ]
+  },
+  "PlayerF": {
+    "name": "PlayerF",
+    "sex": "男",
+    "student_id": "S004",
+    "is_staying_at_venue": false,
+    "registered_events": [
+      {"event_type": "男子单打", "partner": ""},
+      {"event_type": "男子双打", "partner": "PlayerE"}
+    ]
+  },
+  "PlayerC": {
+    "name": "PlayerC",
+    "sex": "女",
+    "student_id": "S005",
+    "is_staying_at_venue": true,
+    "registered_events": [
+      {"event_type": "女子单打", "partner": ""},
+      {"event_type": "女子双打", "partner": "PlayerD"},
+      {"event_type": "混合双打", "partner": "PlayerA"}
+    ]
+  },
+  "PlayerD": {
+    "name": "PlayerD",
+    "sex": "女",
+    "student_id": "S006",
+    "is_staying_at_venue": false,
+    "registered_events": [
+      {"event_type": "女子单打", "partner": ""},
+      {"event_type": "女子双打", "partner": "PlayerC"},
+      {"event_type": "混合双打", "partner": "PlayerB"}
+    ]
+  },
+  "PlayerG": {
+    "name": "PlayerG",
+    "sex": "女",
+    "student_id": "S007",
+    "is_staying_at_venue": true,
+    "registered_events": [
+      {"event_type": "女子单打", "partner": ""},
+      {"event_type": "女子双打", "partner": "PlayerH"}
+    ]
+  },
+  "PlayerH": {
+    "name": "PlayerH",
+    "sex": "女",
+    "student_id": "S008",
+    "is_staying_at_venue": false,
+    "registered_events": [
+      {"event_type": "女子单打", "partner": ""},
+      {"event_type": "女子双打", "partner": "PlayerG"}
+    ]
+  }
+}
