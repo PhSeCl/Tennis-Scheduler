@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 
 class CostEvaluator(Protocol):
+    # 统一接口：单场惩罚 + 全局惩罚
     def match_penalty(
         self,
         match: "MatchNode",
@@ -26,6 +27,7 @@ class CostEvaluator(Protocol):
 
 
 class MatchRule(ABC):
+    # 针对单场比赛的惩罚规则
     @property
     @abstractmethod
     def name(self) -> str:
@@ -52,6 +54,7 @@ class MatchRule(ABC):
 
 
 class GlobalRule(ABC):
+    # 针对全局赛程的惩罚规则
     @property
     @abstractmethod
     def name(self) -> str:
@@ -78,6 +81,7 @@ class GlobalRule(ABC):
 
 
 class EarlyStartRule(MatchRule):
+    # 早场不驻地选手惩罚
     def __init__(self, weight: float) -> None:
         self._weight = weight
 
@@ -106,6 +110,7 @@ class EarlyStartRule(MatchRule):
 
 
 class BackToBackRule(MatchRule):
+    # 连场休息惩罚
     def __init__(self, weight: float) -> None:
         self._weight = weight
 
@@ -137,6 +142,7 @@ class BackToBackRule(MatchRule):
 
 
 class EmptyCourtRule(GlobalRule):
+    # 空场惩罚
     def __init__(self, weight: float) -> None:
         self._weight = weight
 
@@ -186,6 +192,7 @@ class TennisTournamentEvaluator:
         t: int,
         scheduled_matches: list["MatchNode"],
     ) -> float:
+        # 聚合单场规则
         return sum(
             rule.evaluate(match=match, t=t, scheduled_matches=scheduled_matches)
             for rule in self.match_rules
@@ -197,6 +204,7 @@ class TennisTournamentEvaluator:
         current_t: int,
         n_courts: int,
     ) -> float:
+        # 聚合全局规则
         return sum(
             rule.evaluate(
                 total_scheduled_matches=total_scheduled_matches,

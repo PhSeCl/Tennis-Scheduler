@@ -25,6 +25,7 @@ ID_OFFSETS = {
 
 
 def _safe_load_json(path: str, file_desc: str) -> dict | list:
+    # 统一错误处理与提示
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -77,6 +78,7 @@ if __name__ == "__main__":
         print(f"正在解析{event_name}...")
         draw_list = _safe_load_json(draw_path, event_name)
 
+        # 解析抽签并构建 DAG
         try:
             nodes, labels = build_dag_from_json(
                 draw_list,
@@ -90,6 +92,7 @@ if __name__ == "__main__":
         all_nodes.update(nodes)
         all_labels.update(labels)
 
+    # 规则权重由命令行参数控制
     r1 = EarlyStartRule(weight=args.w1)
     r2 = BackToBackRule(weight=args.w2)
     r3 = EmptyCourtRule(weight=args.w3)
@@ -99,6 +102,7 @@ if __name__ == "__main__":
     )
     evaluator.print_active_rules()
 
+    # 调度搜索主入口
     try:
         best_state = beam_search_schedule(
             initial_nodes=all_nodes,
@@ -115,6 +119,7 @@ if __name__ == "__main__":
     for node in best_state.all_nodes.values():
         schedule_by_t.setdefault(node.scheduled_time, []).append(node.match_id)
 
+    # 输出到 results/schedule_result.txt
     base_dir = os.path.dirname(__file__)
     results_dir = os.path.join(base_dir, "results")
     os.makedirs(results_dir, exist_ok=True)

@@ -24,6 +24,7 @@ class _AdvanceBranch:
 
 
 def _extract_players(draw_item: dict) -> list[str]:
+    # 兼容单打/双打的输入格式
     if "players" in draw_item:
         players = draw_item["players"]
         if not isinstance(players, list):
@@ -35,10 +36,12 @@ def _extract_players(draw_item: dict) -> list[str]:
 
 
 def _is_bye(players: list[str]) -> bool:
+    # 任何一侧出现“轮空”即视为轮空分支
     return any(player == "轮空" for player in players)
 
 
 def _get_non_staying_count(players: list[str], players_dict: dict) -> int:
+    # 统计不驻地选手人数，用于首秀惩罚
     count = 0
     for player_name in players:
         player = players_dict.get(player_name)
@@ -50,6 +53,7 @@ def _get_non_staying_count(players: list[str], players_dict: dict) -> int:
 
 
 def _format_team_name(players: list[str]) -> str:
+    # 双打使用斜杠连接
     return "/".join(players)
 
 

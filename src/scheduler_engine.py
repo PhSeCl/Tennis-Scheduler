@@ -84,7 +84,7 @@ class ScheduleState:
         4) 时间推进 t += 1
         5) 更新 ready_match_ids（移除已安排 + 拓扑解锁）
         """
-        # Step 1: 克隆宇宙（核心：深拷贝保证并行状态互不污染）
+        # Step 1: 克隆宇宙（深拷贝保证并行状态互不污染）
         cloned_nodes = deepcopy(self.all_nodes)
         next_state = ScheduleState(
             t=self.t,
@@ -191,7 +191,7 @@ def beam_search_schedule(
             # 每个时间片尽量排满，若冲突过多则降级尝试
             k = min(len(state.ready_match_ids), n_courts)
 
-            # 为绝对确定性，组合输入使用排序后的 ID 列表
+            # 为确定性，组合输入使用排序后的 ID 列表
             ordered_ready_ids = sorted(state.ready_match_ids)
             valid_combos: list[list[int]] = []
             for i in range(k, 0, -1):
@@ -214,6 +214,7 @@ def beam_search_schedule(
                 if valid_combos:
                     break
 
+            # 组合过多时按均匀采样裁剪分支
             if len(valid_combos) > MAX_BRANCHES_PER_STATE:
                 step = len(valid_combos) / MAX_BRANCHES_PER_STATE
                 valid_combos = [
