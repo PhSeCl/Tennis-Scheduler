@@ -122,8 +122,8 @@ if __name__ == "__main__":
     for node in best_state.all_nodes.values():
         schedule_by_t.setdefault(node.scheduled_time, []).append(node.match_id)
 
-    # 输出到 results/schedule_result.txt
-    base_dir = os.path.dirname(__file__)
+    # 输出到项目根目录的 results/
+    base_dir = os.path.dirname(os.path.dirname(__file__))
     results_dir = os.path.join(base_dir, "results")
     os.makedirs(results_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
