@@ -38,6 +38,18 @@
 
 > `is_staying_at_venue` 用来控制“早场惩罚”，不住在场地的选手尽量不会被排在第一场。
 
+### A-1. 报名数据校验 (Data Gatekeeper)
+
+在排表前建议先做一次逻辑校验，提前发现搭档不匹配、性别不符、单双打冲突等问题。
+
+```bash
+python tools/check_players.py \
+  --players data/players.json \
+  --report data/results.txt
+```
+
+> 校验未通过会返回非零状态码，并将完整错误列表写入报告文件。
+
 ### B. 准备抽签数据 (例如 men_singles.json)
 
 抽签文件是一个**扁平数组**：**相邻两个元素表示第一轮的一场对阵**。
@@ -195,6 +207,8 @@ evaluator = TennisTournamentEvaluator(
 Tennis-Scheduler/
 ├─ data/                 # 示例数据
 ├─ results/              # 可选输出目录（若存在）
+├─ tools/
+│  └─ check_players.py    # 报名数据校验工具
 └─ src/
    ├─ cli.py             # 命令行入口
    ├─ dag_builder.py     # 签表 -> DAG
