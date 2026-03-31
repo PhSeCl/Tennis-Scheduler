@@ -5,5 +5,32 @@
 
 /results/*.txt
 
-/src/__pycache__/
-/src/**/*.pyc
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Lint/type checker caches
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
