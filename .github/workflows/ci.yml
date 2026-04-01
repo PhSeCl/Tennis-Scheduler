@@ -70,11 +70,11 @@ jobs:
         run: |
           python -m coverage run --append --source=src,tools src/cli.py \
             --players data/sample_players.json \
-            --ms data/matchs/sample_men_singles.json \
-            --ws data/matchs/sample_women_singles.json \
-            --md data/matchs/sample_men_doubles.json \
-            --wd data/matchs/sample_women_doubles.json \
-            --xd data/matchs/sample_mixed_doubles.json \
+            --ms data/matches/sample_men_singles.json \
+            --ws data/matches/sample_women_singles.json \
+            --md data/matches/sample_men_doubles.json \
+            --wd data/matches/sample_women_doubles.json \
+            --xd data/matches/sample_mixed_doubles.json \
             --courts 5 \
             --w1 10.0 \
             --w2 7.0 \

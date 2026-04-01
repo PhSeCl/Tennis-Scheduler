@@ -76,15 +76,15 @@ python tools/check_players.py \
 ```
 
 > 引擎会自动识别 `player` / `players`，无需区分单打双打接口。
-> 项目提供了脱敏样例可参考：`data/matchs/sample_*.json`。
+> 项目提供了脱敏样例可参考：`data/matches/sample_*.json`。
 
 ### C. 一键运行 (Run the Engine)
 
 ```bash
 python src/cli.py \
   --players data/players.json \
-  --ms data/matchs/men_singles.json \
-  --xd data/matchs/mixed_doubles.json \
+  --ms data/matches/men_singles.json \
+  --xd data/matches/mixed_doubles.json \
   --courts 6 \
   --w1 10.0 \
   --w2 7.0 \
