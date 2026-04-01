@@ -4,11 +4,11 @@
 [![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/downloads/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/pulls)
 [![CI](https://github.com/PhSeCl/Tennis-Scheduler/actions/workflows/ci.yml/badge.svg)](https://github.com/PhSeCl/Tennis-Scheduler/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-88%25-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/actions)
 
 解决多项目网球比赛兼项冲突、轮空不对称、连场休息等痛点的全自动排程工具。
 
 > 📣 面向两类人：
+>
 > - **赛事组织者 / 裁判长**：无需读代码，只需要准备数据并运行命令。
 > - **算法工程师**：可扩展规则、替换搜索策略、快速二次开发。
 
