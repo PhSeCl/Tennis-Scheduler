@@ -3,6 +3,8 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/downloads/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/pulls)
+[![CI](https://github.com/PhSeCl/Tennis-Scheduler/actions/workflows/ci.yml/badge.svg)](https://github.com/PhSeCl/Tennis-Scheduler/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-88%25-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/actions)
 
 解决多项目网球比赛兼项冲突、轮空不对称、连场休息等痛点的全自动排程工具。
 
