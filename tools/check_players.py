@@ -14,7 +14,7 @@ SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..", "src"))
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from models import Player
+from models import Player  # noqa: E402
 
 
 def safe_get_str(obj: Dict[str, Any], key: str, default: str = "") -> str:
