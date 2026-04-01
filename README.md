@@ -1,4 +1,4 @@
-# 🎾 Tennis-Scheduler: 极速网球赛事智能编排引擎
+# 🎾 Tennis-Scheduler: 网球赛事智能编排引擎
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/downloads/)
@@ -15,7 +15,7 @@
 - **全域防兼项**：同一名选手绝不会在同一时间出现在两片场地上。
 - **轮空自适应**：支持不对称签表与轮空晋级，自动消除无效比赛。
 - **多项目混合排表**：单打、双打、混双可同时排，系统自动统一兼项约束。
-- **快速速推演**：束搜索剪枝，快速生成全局最优排程。
+- **快速推演**：束搜索剪枝，快速生成全局最优排程。
 
 ## ✅ 运行条件 (Requirements)
 
@@ -92,6 +92,14 @@ python src/cli.py \
   --beam-width 10
 ```
 
+**惩罚权重说明（可按需求调整）：**
+
+- `--w1`：早场惩罚权重（对应 `EarlyStartRule`）
+- `--w2`：连场惩罚权重（对应 `BackToBackRule`）
+- `--w3`：空场惩罚权重（对应 `EmptyCourtRule`）
+
+权重越大，排程越倾向于避免对应情况。若希望快速生成结果可适度降低权重，若希望严格约束可提高权重。
+
 **参数说明：**
 
 | 参数 | 含义 | 是否必填 |
@@ -164,7 +172,12 @@ pytest -q --cov=src --cov=tools --cov-report=term-missing --cov-fail-under=80
 
 ## 🧩 二次开发指南 (Extension Guide)
 
-`cost_evaluator.py` 基于策略模式，扩展规则非常简单。
+当前架构支持四类扩展点：模型、硬约束、搜索策略、生命周期 Hook。
+下面给出典型的扩展示例与接入方式。
+
+### 1) 规则扩展（软约束/惩罚规则）
+
+`cost_evaluator.py` 基于规则接口，扩展惩罚规则非常简单。
 
 示例：实现“同协会规避规则” `AvoidSameAssociationRule`。
 
@@ -205,6 +218,93 @@ evaluator = TennisTournamentEvaluator(
 
 > 核心搜索引擎完全不需要修改，规则即插即用。
 
+### 2) 硬约束扩展（必须满足的约束）
+
+硬约束通过 `ScheduleConstraint` 注入，调度引擎只调用 `is_valid()`。
+
+```python
+from constraints import ScheduleConstraint
+
+
+class NoSameAssociationConstraint(ScheduleConstraint):
+  def is_valid(self, combo, state) -> bool:
+    # 在此实现自定义“必须满足”的逻辑
+    return True
+```
+
+在 `cli.py` 中注入：
+
+```python
+constraints = [NoPlayerOverlapConstraint(), NoSameAssociationConstraint()]
+best_state = strategy.schedule(
+  initial_nodes=all_nodes,
+  config=config,
+  evaluator=evaluator,
+  constraints=constraints,
+)
+```
+
+### 3) 搜索策略扩展（Strategy Pattern）
+
+新增调度算法时，只需继承 `SearchStrategy` 并实现 `schedule()`。
+
+```python
+from search_strategies import SearchStrategy
+
+
+class GreedySearchStrategy(SearchStrategy):
+  def schedule(self, initial_nodes, config, evaluator, constraints, hooks=None):
+    # 在此实现自定义搜索流程
+    raise NotImplementedError
+```
+
+切换策略：
+
+```python
+strategy = GreedySearchStrategy()
+best_state = strategy.schedule(
+  initial_nodes=all_nodes,
+  config=config,
+  evaluator=evaluator,
+  constraints=[overlap_constraint],
+)
+```
+
+### 4) 生命周期 Hook 扩展（插件机制）
+
+Hook 用于在排程前后注入扩展逻辑，例如导出、通知、监控等。
+
+```python
+from hooks import SchedulerHook
+
+
+class ExportExcelHook(SchedulerHook):
+  def on_scheduling_start(self, initial_nodes, config) -> None:
+    pass
+
+  def on_scheduling_end(self, best_state) -> None:
+    # 在此导出 Excel / 发送通知
+    pass
+```
+
+接入：
+
+```python
+hooks = [ConsoleLoggingHook(), ExportExcelHook()]
+best_state = strategy.schedule(
+  initial_nodes=all_nodes,
+  config=config,
+  evaluator=evaluator,
+  constraints=[overlap_constraint],
+  hooks=hooks,
+)
+```
+
+### 5) 数据模型扩展（Data Models）
+
+项目统一使用 `SchedulerConfig`、`Player`、`MatchData` 承载数据。
+你可以在不改动核心引擎的前提下新增字段并逐步接入。
+
 ## 🧪 常见问题 (Troubleshooting)
 
 - 报错“未找到文件”：请检查传入路径是否正确、文件是否存在。
@@ -223,10 +323,15 @@ Tennis-Scheduler/
 ├─ tools/
 │  └─ check_players.py    # 报名数据校验工具
 └─ src/
-   ├─ cli.py             # 命令行入口
-   ├─ dag_builder.py     # 签表 -> DAG
-   ├─ scheduler_engine.py# 束搜索调度
-   └─ cost_evaluator.py  # 规则与惩罚评估
+  ├─ cli.py               # 命令行入口
+  ├─ constraints.py       # 硬约束接口与实现
+  ├─ cost_evaluator.py    # 规则与惩罚评估
+  ├─ dag_builder.py       # 签表 -> DAG
+  ├─ data_parser.py       # 抽签数据解析适配层
+  ├─ hooks.py             # 生命周期 Hook 机制
+  ├─ models.py            # 数据模型层
+  ├─ scheduler_engine.py  # 调度核心状态模型
+  └─ search_strategies.py # 搜索策略（BeamSearch 等）
 ```
 
 ---
