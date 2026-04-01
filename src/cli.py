@@ -7,8 +7,12 @@ import sys
 from datetime import datetime
 
 from constraints import NoPlayerOverlapConstraint
-from cost_evaluator import (BackToBackRule, EarlyStartRule, EmptyCourtRule,
-                            TennisTournamentEvaluator)
+from cost_evaluator import (
+    BackToBackRule,
+    EarlyStartRule,
+    EmptyCourtRule,
+    TennisTournamentEvaluator,
+)
 from dag_builder import build_dag
 from data_parser import parse_draw_to_teams
 from hooks import ConsoleLoggingHook
