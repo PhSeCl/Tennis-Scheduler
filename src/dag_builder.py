@@ -4,6 +4,8 @@ import math
 from dataclasses import dataclass
 from typing import Optional
 
+from data_parser import is_bye_team
+from models import Player
 from scheduler_engine import MatchNode
 
 
@@ -24,31 +26,21 @@ class _AdvanceBranch:
     direct_entry_players: set[str]
 
 
-def _extract_players(draw_item: dict) -> list[str]:
-    # 兼容单打/双打的输入格式
-    if "players" in draw_item:
-        players = draw_item["players"]
-        if not isinstance(players, list):
-            raise ValueError("draw_item['players'] 必须为列表")
-        return players
-    if "player" in draw_item:
-        return [draw_item["player"]]
-    raise KeyError("draw_item 需包含 'player' 或 'players' 键")
-
-
-def _is_bye(players: list[str]) -> bool:
-    # 任何一侧出现“轮空”即视为轮空分支
-    return any(player == "轮空" for player in players)
-
-
-def _get_non_staying_count(players: list[str], players_dict: dict) -> int:
+def _get_non_staying_count(
+    players: list[str],
+    players_dict: dict[str, Player] | dict[str, dict[str, object]],
+) -> int:
     # 统计不驻地选手人数，用于首秀惩罚
     count = 0
     for player_name in players:
         player = players_dict.get(player_name)
         if not player:
             continue
-        if not bool(player.get("is_staying_at_venue", True)):
+        if isinstance(player, Player):
+            if not player.is_staying_at_venue:
+                count += 1
+            continue
+        if isinstance(player, dict) and not bool(player.get("is_staying_at_venue", True)):
             count += 1
     return count
 
@@ -84,22 +76,22 @@ def _get_prefix(start_id: int) -> str:
     return prefix_map.get(start_id, "赛事")
 
 
-def build_dag_from_json(
-    draw_list: list[dict],
-    players_dict: dict,
+def build_dag(
+    draw_teams: list[list[str]],
+    players_dict: dict[str, Player] | dict[str, dict[str, object]],
     start_id: int,
 ) -> tuple[dict[int, MatchNode], dict[int, str]]:
     """
-    将抽签 JSON 列表解析为 MatchNode DAG（单打/双打通用）。
+    将标准化队伍列表解析为 MatchNode DAG（单打/双打通用）。
 
-    Step 1: 计算规模（基于 draw_list 构建完美二叉树拓扑）
+    Step 1: 计算规模（基于 draw_teams 构建完美二叉树拓扑）
     Step 2: 叶子节点构建（步长为 2 的首轮对阵）
     Step 3: 内部节点构建（两两合并分支，处理轮空首秀惩罚）
     """
-    if len(draw_list) % 2 != 0:
-        raise ValueError("draw_list 长度必须为偶数（两两成对）")
+    if len(draw_teams) % 2 != 0:
+        raise ValueError("draw_teams 长度必须为偶数（两两成对）")
 
-    first_round_matches = len(draw_list) // 2
+    first_round_matches = len(draw_teams) // 2
     if (
         first_round_matches <= 0
         or (first_round_matches & (first_round_matches - 1)) != 0
@@ -118,12 +110,12 @@ def build_dag_from_json(
     round_name = get_round_name(first_round_matches)
     prefix = _get_prefix(start_id)
 
-    for i in range(0, len(draw_list), 2):
-        left_players = _extract_players(draw_list[i])
-        right_players = _extract_players(draw_list[i + 1])
+    for i in range(0, len(draw_teams), 2):
+        left_players = draw_teams[i]
+        right_players = draw_teams[i + 1]
 
-        left_is_bye = _is_bye(left_players)
-        right_is_bye = _is_bye(right_players)
+        left_is_bye = is_bye_team(left_players)
+        right_is_bye = is_bye_team(right_players)
 
         if left_is_bye and right_is_bye:
             raise ValueError("同一签位两侧不能同时为轮空")

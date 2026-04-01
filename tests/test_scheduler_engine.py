@@ -1,6 +1,9 @@
+from constraints import NoPlayerOverlapConstraint
 from cost_evaluator import TennisTournamentEvaluator
-from dag_builder import build_dag_from_json
-from scheduler_engine import beam_search_schedule
+from dag_builder import build_dag
+from data_parser import parse_draw_to_teams
+from models import SchedulerConfig
+from search_strategies import BeamSearchStrategy
 
 
 def _schedule_simple_overlap_case():
@@ -18,16 +21,21 @@ def _schedule_simple_overlap_case():
         {"player": "PlayerC", "round": 0},
     ]
 
-    nodes_a, _ = build_dag_from_json(draw_event_1, players, start_id=1000)
-    nodes_b, _ = build_dag_from_json(draw_event_2, players, start_id=2000)
+    teams_a = parse_draw_to_teams(draw_event_1)
+    teams_b = parse_draw_to_teams(draw_event_2)
+    nodes_a, _ = build_dag(teams_a, players, start_id=1000)
+    nodes_b, _ = build_dag(teams_b, players, start_id=2000)
     all_nodes = {**nodes_a, **nodes_b}
 
     evaluator = TennisTournamentEvaluator(match_rules=[], global_rules=[])
-    return beam_search_schedule(
+    strategy = BeamSearchStrategy()
+    overlap_constraint = NoPlayerOverlapConstraint()
+    config = SchedulerConfig(courts=2, beam_width=5)
+    return strategy.schedule(
         initial_nodes=all_nodes,
-        n_courts=2,
+        config=config,
         evaluator=evaluator,
-        beam_width=5,
+        constraints=[overlap_constraint],
     )
 
 

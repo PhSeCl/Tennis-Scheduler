@@ -1,6 +1,7 @@
 import pytest
 
-from dag_builder import build_dag_from_json
+from dag_builder import build_dag
+from data_parser import parse_draw_to_teams
 
 
 def test_build_dag_minimal_single_elimination() -> None:
@@ -17,7 +18,8 @@ def test_build_dag_minimal_single_elimination() -> None:
         {"player": "PlayerD", "round": 0},
     ]
 
-    nodes, labels = build_dag_from_json(draw, players, start_id=1000)
+    teams = parse_draw_to_teams(draw)
+    nodes, labels = build_dag(teams, players, start_id=1000)
 
     # 4 players -> 2 first-round matches + 1 final = 3 nodes
     assert len(nodes) == 3
@@ -38,7 +40,8 @@ def test_build_dag_with_bye_branch() -> None:
         {"player": "PlayerC", "round": 0},
     ]
 
-    nodes, _ = build_dag_from_json(draw, players, start_id=1000)
+    teams = parse_draw_to_teams(draw)
+    nodes, _ = build_dag(teams, players, start_id=1000)
 
     # One bye -> one first-round match + final = 2 nodes
     assert len(nodes) == 2
@@ -57,4 +60,5 @@ def test_build_dag_rejects_double_bye() -> None:
     ]
 
     with pytest.raises(ValueError):
-        build_dag_from_json(draw, players, start_id=1000)
+        teams = parse_draw_to_teams(draw)
+        build_dag(teams, players, start_id=1000)

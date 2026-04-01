@@ -5,8 +5,16 @@
 
 import argparse
 import json
+import os
 import sys
 from typing import Any, Dict, List, Set
+
+CURRENT_DIR = os.path.dirname(__file__)
+SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "..", "src"))
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
+from models import Player
 
 
 def safe_get_str(obj: Dict[str, Any], key: str, default: str = "") -> str:
@@ -44,21 +52,25 @@ def main() -> None:
     print(f"正在加载选手数据库: {args.players} ...")
     try:
         with open(args.players, "r", encoding="utf-8") as f:
-            players = json.load(f)
-            if not isinstance(players, dict):
-                players = {}
+            players_raw = json.load(f)
+            if not isinstance(players_raw, dict):
+                players_raw = {}
     except Exception as e:
         print(f"[Error] 无法读取选手文件: {e}")
         sys.exit(1)
+
+    players: Dict[str, Player] = {}
+    for key_name, info in players_raw.items():
+        if not isinstance(info, dict):
+            continue
+        players[key_name] = Player.from_dict(key_name, info)
 
     errors: List[str] = []
 
     # 1) 学号冲突校验
     student_id_map: Dict[str, Set[str]] = {}
-    for key_name, info in players.items():
-        if not isinstance(info, dict):
-            continue
-        student_id = safe_get_str(info, "student_id")
+    for key_name, player in players.items():
+        student_id = player.get_str("student_id")
         if not student_id:
             continue
         student_id_map.setdefault(student_id, set()).add(key_name)
@@ -71,30 +83,25 @@ def main() -> None:
             )
 
     # 2) 键名一致性校验
-    for key_name, info in players.items():
-        if not isinstance(info, dict):
-            continue
-        inner_name = safe_get_str(info, "name")
+    for key_name, player in players.items():
+        inner_name = player.get_str("name")
         if inner_name != key_name:
             errors.append(
                 f"[键名不一致] {key_name}: 顶层键名与内部name字段不一致 (name={inner_name})"
             )
 
     # 构建索引
-    player_info: Dict[str, Dict[str, Any]] = {
-        name: info for name, info in players.items() if isinstance(info, dict)
-    }
     player_events: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
-    for name, info in player_info.items():
-        registered_events = safe_get_list(info, "registered_events")
+    for name, player in players.items():
+        registered_events = player.get_list("registered_events")
         player_events[name] = build_event_index(
             [e for e in registered_events if isinstance(e, dict)]
         )
 
     # 3~6) 业务逻辑深度校验
-    for name, info in player_info.items():
-        sex = safe_get_str(info, "sex")
-        registered_events = safe_get_list(info, "registered_events")
+    for name, player in players.items():
+        sex = player.get_str("sex")
+        registered_events = player.get_list("registered_events")
 
         for event in registered_events:
             if not isinstance(event, dict):
@@ -123,7 +130,7 @@ def main() -> None:
 
             # 搭档存在性与双向奔赴校验
             if partner:
-                if partner not in player_info:
+                if partner not in players:
                     errors.append(
                         f'[搭档不存在] {name}: 在"{event_type}"的搭档"{partner}"不在总名单中'
                     )
@@ -156,8 +163,8 @@ def main() -> None:
                     f'[性别不符] {name}: 报名"{event_type}"，但登记性别为"{sex}"'
                 )
 
-            if partner and partner in player_info:
-                partner_sex = safe_get_str(player_info[partner], "sex")
+            if partner and partner in players:
+                partner_sex = players[partner].get_str("sex")
                 if "男子" in event_type and partner_sex != "男":
                     errors.append(
                         f'[搭档性别不符] {name}: 你的搭档"{partner}"登记性别为"{partner_sex}"'
