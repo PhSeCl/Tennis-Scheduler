@@ -40,7 +40,9 @@ def _get_non_staying_count(
             if not player.is_staying_at_venue:
                 count += 1
             continue
-        if isinstance(player, dict) and not bool(player.get("is_staying_at_venue", True)):
+        if isinstance(player, dict) and not bool(
+            player.get("is_staying_at_venue", True)
+        ):
             count += 1
     return count
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Optional
@@ -149,5 +150,3 @@ def evaluate_empty_court_penalty(
         current_t=current_t,
         n_courts=n_courts,
     )
-
-
