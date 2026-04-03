@@ -3,8 +3,6 @@
 /data/**/*.json
 !/data/**/sample_*.json
 
-
-# Results output
 /results/*.txt
 
 # Python bytecode
@@ -28,20 +26,42 @@ venv/
 env/
 .env/
 
-# Node.js artifacts
-frontend/node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
 # Build artifacts
 build/
 dist/
-frontend/dist/
 *.egg-info/
-*.spec
 
 # OS artifacts
 .DS_Store
 Thumbs.db
+
+# =========================
+# Frontend / Node.js
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+frontend/dist/
+
+# =========================
+# Eel / PyInstaller Build
+# =========================
+*.spec
+
+# =========================
+# IDEs and Editors
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.*
