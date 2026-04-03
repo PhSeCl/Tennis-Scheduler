@@ -83,6 +83,8 @@ cd ..
 python app.py
 ```
 
+启动后会打开本机浏览器窗口（默认 Edge/系统浏览器模式）。
+
 ## 💻 命令行使用指南 (CLI Quick Start)
 
 ### A. 准备选手数据 (players.json)
@@ -379,6 +381,8 @@ best_state = strategy.schedule(
 Tennis-Scheduler/
 ├─ .github/workflows/     # CI 配置
 ├─ data/                 # 示例数据（含 sample_*.json）
+├─ frontend/             # React + Vite + Tailwind 前端
+├─ app.py                # Eel 桌面应用入口
 ├─ results/              # 可选输出目录（若存在）
 ├─ tests/                # 单元测试
 ├─ tools/
