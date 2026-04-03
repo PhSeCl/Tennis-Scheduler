@@ -1,0 +1,97 @@
+[
+    {
+        "name": "赵旭彤",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "麦穗湘",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "韩桢",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "符馨尹",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "陈欣橦",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "杨敏行",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "左黛慧",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "黄梓淇",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "叶宇婷",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "李盼",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "邱小柔",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "袁艺",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "刘泽慧",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "徐菀优",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "王子涵",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "张艺欣",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    },
+    {
+        "name": "操越",
+        "is_seed": true,
+        "is_staying_at_venue": false
+    },
+    {
+        "name": "梁雅雯",
+        "is_seed": true,
+        "is_staying_at_venue": false
+    },
+    {
+        "name": "李知筱",
+        "is_seed": true,
+        "is_staying_at_venue": true
+    }
+]

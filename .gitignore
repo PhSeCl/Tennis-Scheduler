@@ -1,8 +1,4 @@
-# Ignore JSON files under data
-/data/*.json
-/data/**/*.json
-!/data/**/sample_*.json
-
+# Results output
 /results/*.txt
 
 # Python bytecode
@@ -26,10 +22,19 @@ venv/
 env/
 .env/
 
+# Node.js artifacts
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # Build artifacts
 build/
 dist/
+frontend/dist/
 *.egg-info/
+*.spec
 
 # OS artifacts
 .DS_Store
