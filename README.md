@@ -2,6 +2,9 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-green.svg)](https://www.python.org/downloads/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Eel](https://img.shields.io/badge/Eel-Python-4B8BBE)](https://github.com/python-eel/Eel)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/PhSeCl/Tennis-Scheduler/pulls)
 [![CI](https://github.com/PhSeCl/Tennis-Scheduler/actions/workflows/ci.yml/badge.svg)](https://github.com/PhSeCl/Tennis-Scheduler/actions)
 
@@ -18,13 +21,69 @@
 - **轮空自适应**：支持不对称签表与轮空晋级，自动消除无效比赛。
 - **多项目混合排表**：单打、双打、混双可同时排，系统自动统一兼项约束。
 - **快速推演**：束搜索剪枝，快速生成全局最优排程。
+- **现代化桌面 GUI**：提供全可视化的选手管理、完美二叉树签表预览、排表参数控制台以及中英双语切换，极大降低使用门槛。
 
 ## ✅ 运行条件 (Requirements)
 
 - Python 3.8+
-- 纯标准库，无第三方依赖
+- Node.js 16+
+- Python 依赖：eel（见 requirements.txt）
 
-## 🚀 快速使用指南 (Quick Start for Organizers)
+## 🖥️ 图形界面使用指南 (GUI Quick Start)
+
+项目已升级为本地桌面应用，新增 frontend/ 与 app.py 作为 GUI 入口。
+
+### Step 1: 安装依赖
+
+- 前端：
+
+```bash
+cd frontend
+npm install
+```
+
+- 后端：
+
+```bash
+pip install -r requirements.txt
+# 或
+pip install eel
+```
+
+### Step 2: 开发模式运行
+
+- 终端 A（前端）：
+
+```bash
+cd frontend
+npm run dev
+```
+
+- 终端 B（后端）：
+
+```bash
+python app.py --dev
+```
+
+浏览器访问通常为：http://localhost:5173
+
+### Step 3: 生产模式运行（本地桌面）
+
+- 先构建前端：
+
+```bash
+cd frontend
+npm run build
+```
+
+- 再启动 Eel：
+
+```bash
+cd ..
+python app.py
+```
+
+## 💻 命令行使用指南 (CLI Quick Start)
 
 ### A. 准备选手数据 (players.json)
 
