@@ -30,6 +30,14 @@ from cost_evaluator import BackToBackRule, EarlyStartRule, EmptyCourtRule, Tenni
 from dag_builder import build_dag
 from data_parser import parse_draw_to_teams
 from models import Player, SchedulerConfig
+from schedule_output import (
+    build_schedule_by_slot,
+    event_display_name,
+    event_key_from_draw_file,
+    normalize_event_labels,
+    serialize_schedule_txt,
+    start_id_for_draw_file,
+)
 from search_strategies import BeamSearchStrategy
 
 
@@ -106,27 +114,28 @@ def run_scheduler(config: dict, file_paths: dict) -> dict:
             if isinstance(info, dict):
                 players_dict[key_name] = Player.from_dict(key_name, info)
 
-        base_offsets = {
-            "ms": 1000,
-            "ws": 2000,
-            "md": 3000,
-            "wd": 4000,
-            "xd": 5000,
-        }
-
         all_nodes: dict[int, object] = {}
         all_labels: dict[int, str] = {}
+        event_counts: dict[str, int] = {}
 
         for index, draw_file in enumerate(draw_files):
-            key = os.path.splitext(os.path.basename(draw_file))[0]
-            start_id = base_offsets.get(key, 6000 + (index * 1000))
+            event_key = event_key_from_draw_file(draw_file)
+            duplicate_index = event_counts.get(event_key, 0) if event_key is not None else 0
+            start_id = start_id_for_draw_file(
+                draw_file,
+                index,
+                duplicate_index=duplicate_index,
+            )
             draw_list = _load_json_file(draw_file)
             if not isinstance(draw_list, list):
                 raise ValueError(f"{draw_file} must be a JSON array")
             draw_teams = parse_draw_to_teams(draw_list)
             nodes, labels = build_dag(draw_teams, players_dict, start_id=start_id)
+            labels = normalize_event_labels(labels, draw_file)
             all_nodes.update(nodes)
             all_labels.update(labels)
+            if event_key is not None:
+                event_counts[event_key] = duplicate_index + 1
 
         scheduler_config = SchedulerConfig(
             courts=int(config.get("courts", 5)),
@@ -153,25 +162,22 @@ def run_scheduler(config: dict, file_paths: dict) -> dict:
             hooks=[],
         )
 
-        schedule_by_t: dict[str, list[dict[str, object]]] = {}
-        for node in best_state.all_nodes.values():
-            slot_key = str(node.scheduled_time)
-            schedule_by_t.setdefault(slot_key, []).append(
-                {
-                    "match_id": node.match_id,
-                    "label": all_labels.get(node.match_id, f"[Unknown] Match {node.match_id}"),
-                    "players": sorted(node.potential_players),
-                }
-            )
-
-        for matches in schedule_by_t.values():
-            matches.sort(key=lambda item: item["match_id"])
+        schedule_by_t = build_schedule_by_slot(best_state.all_nodes, all_labels)
+        active_rules = [
+            {
+                "name": rule.name,
+                "weight": rule.weight,
+                "description": rule.description,
+            }
+            for rule in [*evaluator.match_rules, *evaluator.global_rules]
+        ]
 
         return {
             "status": "success",
             "total_cost": best_state.cost,
             "total_slots": best_state.t - 1,
             "schedule_by_t": schedule_by_t,
+            "active_rules": active_rules,
         }
     except Exception as exc:  # noqa: BLE001
         return {"status": "error", "message": str(exc)}
@@ -185,25 +191,16 @@ def export_schedule_to_txt(schedule_data: dict, selected_draws: list[str]) -> di
         filepath = os.path.join(RESULTS_DIR, f"schedule_result_{timestamp}.txt")
 
         with open(filepath, "w", encoding="utf-8") as f:
-            f.write("=" * 50 + "\n")
-            f.write("Tennis Smart Schedule Result\n")
-            f.write(f"Total Penalty Cost: {schedule_data.get('total_cost')}\n")
-            f.write(f"Total Time Slots: {schedule_data.get('total_slots')}\n")
-            f.write(f"Included Events: {', '.join(selected_draws)}\n")
-            f.write("=" * 50 + "\n\n")
-
-            schedule_by_t = schedule_data.get("schedule_by_t", {})
-            for t in sorted(schedule_by_t.keys(), key=lambda x: int(x)):
-                f.write(f"[Time Slot {t}]\n")
-                matches = schedule_by_t[t]
-                for idx, match in enumerate(matches, start=1):
-                    players_str = " / ".join(match.get("players", []))
-                    label = match.get("label", "")
-                    match_id = match.get("match_id", "")
-                    f.write(
-                        f"  - Court {idx}: {label} ({players_str}) [ID: {match_id}]\n"
-                    )
-                f.write("\n")
+            included_events = [event_display_name(draw_file) for draw_file in selected_draws]
+            f.write(
+                serialize_schedule_txt(
+                    total_cost=schedule_data.get("total_cost"),
+                    total_slots=schedule_data.get("total_slots"),
+                    included_events=included_events,
+                    schedule_by_t=schedule_data.get("schedule_by_t", {}),
+                    active_rules=schedule_data.get("active_rules"),
+                )
+            )
 
         return {"status": "success", "filepath": filepath}
     except Exception as exc:  # noqa: BLE001

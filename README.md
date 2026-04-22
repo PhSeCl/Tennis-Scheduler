@@ -407,3 +407,28 @@ Tennis-Scheduler/
 - 禁止用于任何商业用途或商业化场景。
 - 结果仅供参考，开发者不对赛程结果的正确性或后果承担责任。
 - 欢迎提交 Issue / PR，共同改进。
+## uv Quick Start
+
+如果你希望用 `uv` 管理环境，现在项目已经支持：
+
+```bash
+uv sync --dev
+```
+
+GUI 开发模式：
+
+```bash
+uv run python app.py --dev
+```
+
+CLI：
+
+```bash
+uv run python src/cli.py --players data/players.json --ms data/matches/men_singles.json
+```
+
+测试：
+
+```bash
+uv run pytest -q
+```
