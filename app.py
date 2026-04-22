@@ -25,12 +25,8 @@ RESULTS_DIR = os.path.join(RUNTIME_DIR, "results")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from constraints import NoPlayerOverlapConstraint
-from cost_evaluator import BackToBackRule, EarlyStartRule, EmptyCourtRule, TennisTournamentEvaluator
-from dag_builder import build_dag
-from data_parser import parse_draw_to_teams
-from models import Player, SchedulerConfig
-from search_strategies import BeamSearchStrategy
+from models import SchedulerConfig
+from scheduler_pipeline import build_schedule_payload, run_scheduler_from_draws
 
 
 @eel.expose
@@ -55,6 +51,12 @@ def _load_json_file(filename: str) -> dict | list:
 
 def _default_payload(filename: str) -> dict | list:
     return {} if filename == "players.json" else []
+
+
+def _format_optional_float(value: object, digits: int = 6) -> str:
+    if value is None:
+        return "-"
+    return f"{float(value):.{digits}f}"
 
 
 @eel.expose
@@ -101,32 +103,12 @@ def run_scheduler(config: dict, file_paths: dict) -> dict:
         if not isinstance(players_raw, dict):
             raise ValueError("players.json must be a JSON object")
 
-        players_dict: dict[str, Player] = {}
-        for key_name, info in players_raw.items():
-            if isinstance(info, dict):
-                players_dict[key_name] = Player.from_dict(key_name, info)
-
-        base_offsets = {
-            "ms": 1000,
-            "ws": 2000,
-            "md": 3000,
-            "wd": 4000,
-            "xd": 5000,
-        }
-
-        all_nodes: dict[int, object] = {}
-        all_labels: dict[int, str] = {}
-
-        for index, draw_file in enumerate(draw_files):
-            key = os.path.splitext(os.path.basename(draw_file))[0]
-            start_id = base_offsets.get(key, 6000 + (index * 1000))
+        draw_payloads: dict[str, list[dict]] = {}
+        for draw_file in draw_files:
             draw_list = _load_json_file(draw_file)
             if not isinstance(draw_list, list):
                 raise ValueError(f"{draw_file} must be a JSON array")
-            draw_teams = parse_draw_to_teams(draw_list)
-            nodes, labels = build_dag(draw_teams, players_dict, start_id=start_id)
-            all_nodes.update(nodes)
-            all_labels.update(labels)
+            draw_payloads[draw_file] = draw_list
 
         scheduler_config = SchedulerConfig(
             courts=int(config.get("courts", 5)),
@@ -136,42 +118,39 @@ def run_scheduler(config: dict, file_paths: dict) -> dict:
             w3=float(config.get("w3", 2.5)),
         )
 
-        evaluator = TennisTournamentEvaluator(
-            match_rules=[
-                EarlyStartRule(weight=scheduler_config.w1),
-                BackToBackRule(weight=scheduler_config.w2),
-            ],
-            global_rules=[EmptyCourtRule(weight=scheduler_config.w3)],
-        )
+        solver = str(config.get("solver", "beam"))
+        solver_time_limit = float(config.get("solver_time_limit", 60.0))
+        solver_mip_gap = float(config.get("solver_mip_gap", 0.0))
+        solver_log_to_console = bool(config.get("solver_log_to_console", False))
 
-        strategy = BeamSearchStrategy()
-        best_state = strategy.schedule(
-            initial_nodes=all_nodes,
+        run_result = run_scheduler_from_draws(
+            players_raw=players_raw,
+            draw_payloads=draw_payloads,
             config=scheduler_config,
-            evaluator=evaluator,
-            constraints=[NoPlayerOverlapConstraint()],
+            solver=solver,
+            solver_time_limit=solver_time_limit,
+            solver_mip_gap=solver_mip_gap,
+            solver_log_to_console=solver_log_to_console,
             hooks=[],
         )
-
-        schedule_by_t: dict[str, list[dict[str, object]]] = {}
-        for node in best_state.all_nodes.values():
-            slot_key = str(node.scheduled_time)
-            schedule_by_t.setdefault(slot_key, []).append(
-                {
-                    "match_id": node.match_id,
-                    "label": all_labels.get(node.match_id, f"[Unknown] Match {node.match_id}"),
-                    "players": sorted(node.potential_players),
-                }
-            )
-
-        for matches in schedule_by_t.values():
-            matches.sort(key=lambda item: item["match_id"])
+        schedule_by_t = build_schedule_payload(
+            best_state=run_result.best_state,
+            all_labels=run_result.all_labels,
+        )
+        solve_info = run_result.solve_info
 
         return {
             "status": "success",
-            "total_cost": best_state.cost,
-            "total_slots": best_state.t - 1,
+            "total_cost": run_result.best_state.cost,
+            "total_slots": run_result.best_state.t - 1,
             "schedule_by_t": schedule_by_t,
+            "enabled_events": run_result.enabled_events,
+            "solve_info": solve_info,
+            "solver": solve_info.get("solver", solver),
+            "solver_status": solve_info.get("status_name"),
+            "solver_best_bound": solve_info.get("best_bound"),
+            "solver_mip_gap": solve_info.get("mip_gap"),
+            "solver_runtime_seconds": solve_info.get("runtime_seconds"),
         }
     except Exception as exc:  # noqa: BLE001
         return {"status": "error", "message": str(exc)}
@@ -190,6 +169,20 @@ def export_schedule_to_txt(schedule_data: dict, selected_draws: list[str]) -> di
             f.write(f"Total Penalty Cost: {schedule_data.get('total_cost')}\n")
             f.write(f"Total Time Slots: {schedule_data.get('total_slots')}\n")
             f.write(f"Included Events: {', '.join(selected_draws)}\n")
+            f.write(f"Solver: {schedule_data.get('solver', 'beam')}\n")
+            f.write(f"Solver Status: {schedule_data.get('solver_status', '-')}\n")
+            f.write(
+                "Runtime Seconds: "
+                f"{_format_optional_float(schedule_data.get('solver_runtime_seconds'), digits=4)}\n"
+            )
+            f.write(
+                "Best Bound: "
+                f"{_format_optional_float(schedule_data.get('solver_best_bound'))}\n"
+            )
+            f.write(
+                "MIP Gap: "
+                f"{_format_optional_float(schedule_data.get('solver_mip_gap'))}\n"
+            )
             f.write("=" * 50 + "\n\n")
 
             schedule_by_t = schedule_data.get("schedule_by_t", {})
@@ -205,7 +198,12 @@ def export_schedule_to_txt(schedule_data: dict, selected_draws: list[str]) -> di
                     )
                 f.write("\n")
 
-        return {"status": "success", "filepath": filepath}
+        return {
+            "status": "success",
+            "filepath": filepath,
+            "solver": schedule_data.get("solver", "beam"),
+            "solver_status": schedule_data.get("solver_status", "-"),
+        }
     except Exception as exc:  # noqa: BLE001
         return {"status": "error", "message": str(exc)}
 

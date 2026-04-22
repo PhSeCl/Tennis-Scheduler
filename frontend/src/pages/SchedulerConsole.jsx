@@ -8,7 +8,10 @@ const defaultConfig = {
   beam_width: 10,
   w1: 10.0,
   w2: 7.0,
-  w3: 2.5
+  w3: 2.5,
+  solver: "beam",
+  solver_time_limit: 60.0,
+  solver_mip_gap: 0.0
 };
 
 const numberField = (value) => (value === "" ? "" : Number(value));
@@ -174,9 +177,54 @@ function SchedulerConsole() {
                     min="1"
                     value={config.beam_width}
                     onChange={(event) => handleConfigChange("beam_width", event.target.value)}
-                    className="mt-1 rounded-lg border border-slate-200 px-3 py-2"
+                    disabled={config.solver !== "beam"}
+                    className="mt-1 rounded-lg border border-slate-200 px-3 py-2 disabled:bg-slate-100 disabled:text-slate-400"
                   />
                 </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wide text-slate-400">{t("solverSettings")}</p>
+              <div className="space-y-3">
+                <label className="flex flex-col text-sm text-slate-600">
+                  {t("solverType")}
+                  <select
+                    value={config.solver}
+                    onChange={(event) => setConfig((prev) => ({ ...prev, solver: event.target.value }))}
+                    className="mt-1 rounded-lg border border-slate-200 px-3 py-2"
+                  >
+                    <option value="beam">{t("beamSolver")}</option>
+                    <option value="gurobi">{t("gurobiSolver")}</option>
+                  </select>
+                </label>
+
+                {config.solver === "gurobi" && (
+                  <>
+                    <label className="flex flex-col text-sm text-slate-600">
+                      {t("solverTimeLimit")}
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={config.solver_time_limit}
+                        onChange={(event) => handleConfigChange("solver_time_limit", event.target.value)}
+                        className="mt-1 rounded-lg border border-slate-200 px-3 py-2"
+                      />
+                    </label>
+                    <label className="flex flex-col text-sm text-slate-600">
+                      {t("solverMipGap")}
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        value={config.solver_mip_gap}
+                        onChange={(event) => handleConfigChange("solver_mip_gap", event.target.value)}
+                        className="mt-1 rounded-lg border border-slate-200 px-3 py-2"
+                      />
+                    </label>
+                  </>
+                )}
               </div>
             </div>
 
@@ -250,15 +298,36 @@ function SchedulerConsole() {
           {result && (
             <div className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="grid gap-3 sm:grid-cols-2">
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">{t("totalPenaltyCost")}</p>
-                  <p className="text-2xl font-semibold text-slate-900 mt-2">{result.total_cost ?? "-"}</p>
-                </div>
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                  <p className="text-xs uppercase tracking-wide text-slate-400">{t("totalTimeSlots")}</p>
-                  <p className="text-2xl font-semibold text-slate-900 mt-2">{result.total_slots ?? "-"}</p>
-                </div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t("totalPenaltyCost")}</p>
+                    <p className="text-2xl font-semibold text-slate-900 mt-2">{result.total_cost ?? "-"}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t("totalTimeSlots")}</p>
+                    <p className="text-2xl font-semibold text-slate-900 mt-2">{result.total_slots ?? "-"}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t("solverType")}</p>
+                    <p className="text-lg font-semibold text-slate-900 mt-2">{result.solver ?? "beam"}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t("solverStatus")}</p>
+                    <p className="text-sm font-semibold text-slate-900 mt-2 break-words">{result.solver_status ?? "-"}</p>
+                  </div>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t("solverRuntime")}</p>
+                    <p className="text-2xl font-semibold text-slate-900 mt-2">
+                      {result.solver_runtime_seconds != null
+                        ? Number(result.solver_runtime_seconds).toFixed(4)
+                        : "-"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {t("solverBestBound")}: {result.solver_best_bound != null
+                        ? Number(result.solver_best_bound).toFixed(4)
+                        : "-"}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
