@@ -7,9 +7,20 @@ from datetime import datetime
 
 import eel
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Determine if the app is running as a compiled PyInstaller executable
+if getattr(sys, "frozen", False):
+    # BASE_DIR is the temp folder where PyInstaller extracts everything (_MEIPASS)
+    BASE_DIR = sys._MEIPASS
+    # RUNTIME_DIR is the actual folder where the user double-clicked the .exe
+    RUNTIME_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    RUNTIME_DIR = BASE_DIR
+
 SRC_DIR = os.path.join(BASE_DIR, "src")
-DATA_DIR = os.path.join(BASE_DIR, "data")
+# Data and Results MUST be read/written to the user's actual directory, not the temp folder
+DATA_DIR = os.path.join(RUNTIME_DIR, "data")
+RESULTS_DIR = os.path.join(RUNTIME_DIR, "results")
 
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
@@ -169,10 +180,9 @@ def run_scheduler(config: dict, file_paths: dict) -> dict:
 @eel.expose
 def export_schedule_to_txt(schedule_data: dict, selected_draws: list[str]) -> dict:
     try:
-        results_dir = os.path.join(BASE_DIR, "results")
-        os.makedirs(results_dir, exist_ok=True)
+        os.makedirs(RESULTS_DIR, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filepath = os.path.join(results_dir, f"schedule_result_{timestamp}.txt")
+        filepath = os.path.join(RESULTS_DIR, f"schedule_result_{timestamp}.txt")
 
         with open(filepath, "w", encoding="utf-8") as f:
             f.write("=" * 50 + "\n")
