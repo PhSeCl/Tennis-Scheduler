@@ -395,9 +395,24 @@ Tennis-Scheduler/
   ├─ data_parser.py       # 抽签数据解析适配层
   ├─ hooks.py             # 生命周期 Hook 机制
   ├─ models.py            # 数据模型层
+  ├─ schedule_output.py   # 赛事识别、标签归一化与 GUI/CLI 共享导出层
   ├─ scheduler_engine.py  # 调度核心状态模型
   └─ search_strategies.py # 搜索策略（BeamSearch 等）
 ```
+
+其中 `schedule_output.py` 只承担“输出与事件映射”这一类横切职责：
+
+- 不介入 `dag_builder.py` 的签表建模，不修改 DAG 构建规则
+- 不介入 `scheduler_engine.py` / `search_strategies.py` 的调度搜索与状态推进
+- 仅为 GUI 与 CLI 提供共享的赛事类型识别、标签规范化、按时间片整理与 TXT 序列化能力
+
+这样可以保持原有架构的高内聚、低耦合：
+
+- 调度核心继续专注“怎么排”
+- 约束与惩罚模块继续专注“排得是否合理”
+- `schedule_output.py` 专注“结果如何识别和输出”
+
+后续若新增新的前端入口、导出格式或赛事文件命名规则，也只需要扩展这一层，而不必回改调度引擎本身。
 
 ---
 
