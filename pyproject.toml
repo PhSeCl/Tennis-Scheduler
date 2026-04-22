@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tennis-scheduler"
+version = "0.1.0"
+description = "Smart tennis tournament scheduling for CLI and Eel GUI workflows."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "eel>=0.16.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+]
